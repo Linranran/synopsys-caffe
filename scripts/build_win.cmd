@@ -1,4 +1,4 @@
-echo on
+@echo off
 @setlocal EnableDelayedExpansion
 
 :: Default values
@@ -73,10 +73,10 @@ if DEFINED APPVEYOR (
     :: Change to 1 to use Ninja generator (builds much faster)
     if NOT DEFINED WITH_NINJA set WITH_NINJA=0
     :: Change to 1 to build caffe without CUDA support
-    if NOT DEFINED CPU_ONLY set CPU_ONLY=1
+    if NOT DEFINED CPU_ONLY set CPU_ONLY=0
     :: Change to generate CUDA code for one of the following GPU architectures
     :: [Fermi  Kepler  Maxwell  Pascal  All]
-    if NOT DEFINED CUDA_ARCH_NAME set CUDA_ARCH_NAME=Auto
+    if NOT DEFINED CUDA_ARCH_NAME set CUDA_ARCH_NAME=Maxwell   
     :: Change to Debug to build Debug. This is only relevant for the Ninja generator the Visual Studio generator will generate both Debug and Release configs
     if NOT DEFINED CMAKE_CONFIG set CMAKE_CONFIG=Release
     :: Set to 1 to use NCCL
@@ -96,7 +96,7 @@ if DEFINED APPVEYOR (
     :: Run lint
     if NOT DEFINED RUN_LINT set RUN_LINT=0
     :: Build the install target
-    if NOT DEFINED RUN_INSTALL set RUN_INSTALL=0
+    if NOT DEFINED RUN_INSTALL set RUN_INSTALL=1
 )
 
 :: Set the appropriate CMake generator
@@ -153,7 +153,6 @@ pushd build
 :: Setup the environement for VS x64
 set batch_file=!VS%MSVC_VERSION%0COMNTOOLS!..\..\VC\vcvarsall.bat
 call "%batch_file%" amd64
-echo on
 
 :: Configure using cmake and using the caffe-builder dependencies
 :: Add -DCUDNN_ROOT=C:/Projects/caffe/cudnn-8.0-windows10-x64-v5.1/cuda ^
@@ -169,8 +168,8 @@ cmake -G"!CMAKE_GENERATOR!" ^
       -DCOPY_PREREQUISITES:BOOL=1 ^
       -DINSTALL_PREREQUISITES:BOOL=1 ^
       -DUSE_NCCL:BOOL=!USE_NCCL! ^
+      -DCUDNN_ROOT=C:/Projects/cudnn-10.0-windows10-x64-v7.4.2.24/cuda ^
       -DCUDA_ARCH_NAME:STRING=%CUDA_ARCH_NAME% ^
-      %* ^
       "%~dp0\.."
 
 if ERRORLEVEL 1 (
